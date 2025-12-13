@@ -4,6 +4,39 @@ local vu3 = game:GetService("TweenService")
 local vu4 = game:GetService("RunService")
 local vu5 = game:GetService("ReplicatedStorage")
 
+-- 等待游戏加载完成
+local function waitForGameLoad()
+    local maxWaitTime = 30
+    local startTime = tick()
+    
+    while tick() - startTime < maxWaitTime do
+        if game:IsLoaded() then
+            return true
+        end
+        task.wait(1)
+    end
+    
+    return false
+end
+
+-- 在脚本主体开始前等待游戏加载
+if not waitForGameLoad() then
+    warn("游戏加载超时，脚本可能无法正常工作")
+end
+
+-- 全局错误处理
+local originalErrorHandler = nil
+if getgenv().debug then
+    originalErrorHandler = debug.traceback
+end
+
+-- 设置错误处理器
+debug.traceback = function(...)
+    local trace = originalErrorHandler and originalErrorHandler(...) or ...
+    warn("脚本错误追踪:", trace)
+    return trace
+end
+
 local player = vu1.LocalPlayer
 while not player do
     task.wait(1)
@@ -1787,6 +1820,10 @@ local function vu647()
     end
     
     local v624 = vu1.LocalPlayer
+    if not v624 then
+        return
+    end
+    
     local v625 = v624.Character
     if not v625 then
         return
@@ -1856,58 +1893,110 @@ local function vu647()
     end
 end
 
+-- 修复ESP更新循环，添加安全检查和错误处理
 task.spawn(function()
     while task.wait(0.1) do
-        if vu49 then
-            pcall(vu589)
-        else
-            for _, v651 in pairs(vu52) do
-                if v651 and v651.Parent then
-                    v651:Destroy()
+        pcall(function()
+            if vu49 then
+                local player = vu1.LocalPlayer
+                if player and player.Character then
+                    vu589()
+                else
+                    -- 清理ESP
+                    for _, v651 in pairs(vu52) do
+                        if v651 and v651.Parent then
+                            v651:Destroy()
+                        end
+                    end
+                    vu52 = {}
+                    for _, v689 in pairs(vu681) do
+                        if v689 and v689.Parent then
+                            v689:Destroy()
+                        end
+                    end
+                    vu681 = {}
                 end
-            end
-            vu52 = {}
-            for _, v689 in pairs(vu681) do
-                if v689 and v689.Parent then
-                    v689:Destroy()
+            else
+                for _, v651 in pairs(vu52) do
+                    if v651 and v651.Parent then
+                        v651:Destroy()
+                    end
                 end
-            end
-            vu681 = {}
-        end
-        
-        if vu50 then
-            pcall(vu623)
-        else
-            for _, v655 in pairs(vu53) do
-                if v655 and v655.Parent then
-                    v655:Destroy()
+                vu52 = {}
+                for _, v689 in pairs(vu681) do
+                    if v689 and v689.Parent then
+                        v689:Destroy()
+                    end
                 end
+                vu681 = {}
             end
-            vu53 = {}
-            for _, v690 in pairs(vu682) do
-                if v690 and v690.Parent then
-                    v690:Destroy()
+            
+            if vu50 then
+                local player = vu1.LocalPlayer
+                if player and player.Character then
+                    vu623()
+                else
+                    for _, v655 in pairs(vu53) do
+                        if v655 and v655.Parent then
+                            v655:Destroy()
+                        end
+                    end
+                    vu53 = {}
+                    for _, v690 in pairs(vu682) do
+                        if v690 and v690.Parent then
+                            v690:Destroy()
+                        end
+                    end
+                    vu682 = {}
                 end
-            end
-            vu682 = {}
-        end
-        
-        if vu51 then
-            pcall(vu647)
-        else
-            for _, v659 in pairs(vu54) do
-                if v659 and v659.Parent then
-                    v659:Destroy()
+            else
+                for _, v655 in pairs(vu53) do
+                    if v655 and v655.Parent then
+                        v655:Destroy()
+                    end
                 end
-            end
-            vu54 = {}
-            for _, v691 in pairs(vu683) do
-                if v691 and v691.Parent then
-                    v691:Destroy()
+                vu53 = {}
+                for _, v690 in pairs(vu682) do
+                    if v690 and v690.Parent then
+                        v690:Destroy()
+                    end
                 end
+                vu682 = {}
             end
-            vu683 = {}
-        end
+            
+            if vu51 then
+                local player = vu1.LocalPlayer
+                if player and player.Character then
+                    vu647()
+                else
+                    for _, v659 in pairs(vu54) do
+                        if v659 and v659.Parent then
+                            v659:Destroy()
+                        end
+                    end
+                    vu54 = {}
+                    for _, v691 in pairs(vu683) do
+                        if v691 and v691.Parent then
+                            v691:Destroy()
+                        end
+                    end
+                    vu683 = {}
+                end
+            else
+                for _, v659 in pairs(vu54) do
+                    if v659 and v659.Parent then
+                        v659:Destroy()
+                    end
+                end
+                vu54 = {}
+                for _, v691 in pairs(vu683) do
+                    if v691 and v691.Parent then
+                        v691:Destroy()
+                    end
+                end
+                vu683 = {}
+            end
+        end)
     end
 end)
 
@@ -3075,10 +3164,22 @@ task.spawn(function()
     end
 end)
 
+-- 修复移动端UI按钮创建，避免与游戏核心GUI冲突
 task.spawn(function()
+    if not isMobile then return end -- 只在移动端创建
+    
+    task.wait(5) -- 延迟创建，避免与游戏UI冲突
+    
     local success, errorMsg = pcall(function()
         if not getgenv().LoadedTheForgeMobileUI == true then
             getgenv().LoadedTheForgeMobileUI = true
+            
+            -- 等待玩家GUI加载
+            local player = vu1.LocalPlayer
+            if not player then return end
+            
+            local playerGui = player:WaitForChild("PlayerGui", 10)
+            if not playerGui then return end
             
             local screenGui = Instance.new("ScreenGui")
             local mobileButton = Instance.new("ImageButton")
@@ -3090,7 +3191,7 @@ task.spawn(function()
             elseif gethui then
                 screenGui.Parent = gethui()
             else
-                screenGui.Parent = game:GetService("CoreGui")
+                screenGui.Parent = playerGui -- 放在PlayerGui而不是CoreGui
             end
             
             screenGui.Name = "ChinaScript_MobileUIButton"
@@ -3138,6 +3239,8 @@ end)
 
 vu22("人民的脚本 | The Forge", 
     "脚本已加载成功! 已修复以下问题:\n" ..
+    "✅ 游戏加载等待机制\n" ..
+    "✅ 全局错误处理\n" ..
     "✅ 手机端界面适配 (UI缩放: " .. tostring(uiScale * 100) .. "%)\n" ..
     "✅ ESP高亮显示功能\n" ..
     "✅ 降低画质功能\n" ..
