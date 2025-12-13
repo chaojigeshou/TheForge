@@ -4,7 +4,6 @@ local vu3 = game:GetService("TweenService")
 local vu4 = game:GetService("RunService")
 local vu5 = game:GetService("ReplicatedStorage")
 
--- 等待玩家对象可用
 local player = vu1.LocalPlayer
 while not player do
     task.wait(1)
@@ -33,13 +32,12 @@ for _, source in pairs(uiLibrarySources) do
     if v8 and vu7 then
         break
     end
-    task.wait(1) -- 等待一秒再尝试下一个源
+    task.wait(1)
 end
 
 if not (v8 and vu7) then
     warn("加载UI库(MacLib)时出错，尝试备用方案: " .. tostring(v9))
     
-    -- 尝试使用内置的简单UI库作为备用
     local success, simpleUI = pcall(function()
         return loadstring(game:HttpGet("https://raw.githubusercontent.com/bloodball/-back-ups-for-libs/main/simple"))()
     end)
@@ -54,7 +52,6 @@ if not (v8 and vu7) then
     end
 end
 
--- 默认配置
 local DefaultConfig = {
     SelectedRockType = {},
     AutoMineEnabled = false,
@@ -77,39 +74,35 @@ local DefaultConfig = {
     ShowUserInfo = true
 }
 
--- 配置文件管理器
 local vu15 = {
     FileName = "ChinaScriptTheForgeConfig_" .. vu16 .. ".json",
     DefaultConfig = DefaultConfig,
     CurrentConfig = {},
-    SaveConfig = function()
+    SaveConfig = function(self)
         local success, errorMsg = pcall(function()
-            -- 确保文件名有效
-            if not vu15.FileName or vu15.FileName == "" then
-                vu15.FileName = "ChinaScriptTheForgeConfig_" .. vu16 .. ".json"
+            if not self.FileName or self.FileName == "" then
+                self.FileName = "ChinaScriptTheForgeConfig_" .. vu16 .. ".json"
             end
             
-            -- 确保有写入文件的函数
             if writefile and vu2.JSONEncode then
-                writefile(vu15.FileName, vu2:JSONEncode(vu15.CurrentConfig))
+                writefile(self.FileName, vu2:JSONEncode(self.CurrentConfig))
             else
                 warn("缺少必要的函数: writefile 或 JSONEncode")
             end
         end)
         if not success then
             warn("保存配置失败:", errorMsg)
-            -- 尝试创建默认配置
-            if vu15.CurrentConfig then
-                vu15.CurrentConfig = table.clone(DefaultConfig)
+            if self.CurrentConfig then
+                self.CurrentConfig = table.clone(DefaultConfig)
             end
         else
-            print("配置保存成功:", vu15.FileName)
+            print("配置保存成功:", self.FileName)
         end
     end,
-    LoadConfig = function()
+    LoadConfig = function(self)
         local success, fileContent = pcall(function()
-            if isfile and isfile(vu15.FileName) then
-                return readfile(vu15.FileName)
+            if isfile and isfile(self.FileName) then
+                return readfile(self.FileName)
             else
                 return nil
             end
@@ -120,42 +113,40 @@ local vu15 = {
                 return vu2:JSONDecode(fileContent)
             end)
             if decodeSuccess and decoded then
-                -- 确保所有字段都存在
                 for key, value in pairs(DefaultConfig) do
                     if decoded[key] == nil then
                         decoded[key] = value
                     end
                 end
-                vu15.CurrentConfig = decoded
+                self.CurrentConfig = decoded
                 print("配置加载成功")
             else
                 print("配置解码失败，使用默认配置")
-                vu15.CurrentConfig = table.clone(DefaultConfig)
-                pcall(vu15.SaveConfig)
+                self.CurrentConfig = table.clone(DefaultConfig)
+                pcall(function() self:SaveConfig() end)
             end
         else
             print("配置文件不存在或读取失败，使用默认配置")
-            vu15.CurrentConfig = table.clone(DefaultConfig)
-            pcall(vu15.SaveConfig)
+            self.CurrentConfig = table.clone(DefaultConfig)
+            pcall(function() self:SaveConfig() end)
         end
     end
 }
 
--- 安全加载配置
 local loadSuccess, loadError = pcall(function()
-    vu15.LoadConfig()
+    vu15:LoadConfig()
 end)
 
 if not loadSuccess then
     warn("加载配置失败:", loadError)
     vu15.CurrentConfig = table.clone(DefaultConfig)
-    pcall(vu15.SaveConfig)
+    pcall(function() vu15:SaveConfig() end)
 end
 
 local v17 = vu7
 local vu18 = vu7.Window(v17, {
-    Title = "China Script | The Forge",
-    Subtitle = "你好, " .. vu16,
+    Title = "人民的脚本 | The Forge",
+    Subtitle = "脚本交流群1038550458",
     Size = UDim2.fromOffset(720, 500),
     DragStyle = 1,
     DisabledWindowControls = {},
@@ -164,7 +155,6 @@ local vu18 = vu7.Window(v17, {
     AcrylicBlur = true
 })
 
--- 通知函数
 local function vu22(p19, p20, p21)
     if vu18 and vu18.Notify then
         vu18:Notify({
@@ -177,13 +167,11 @@ local function vu22(p19, p20, p21)
     end
 end
 
--- 设置文件夹
 local v23 = vu7
 if vu7.SetFolder then
     vu7.SetFolder(v23, "ChinaScriptTheForge")
 end
 
--- 创建标签页
 local v24 = vu18
 local v25 = vu18.TabGroup(v24)
 
@@ -206,31 +194,21 @@ local v26 = {
     })
 }
 
--- 中文翻译字典
 local ChineseTranslations = {
-    -- 矿石类型
     ["Coal"] = "煤炭",
     ["Iron"] = "铁矿石",
     ["Gold"] = "金矿石",
     ["Diamond"] = "钻石",
     ["Copper"] = "铜矿石",
-    ["Silver"] = "银矿石",
-    ["Platinum"] = "铂金矿石",
     ["Emerald"] = "翡翠",
     ["Ruby"] = "红宝石",
-    ["Sapphire"] = "蓝宝石",
     ["Topaz"] = "黄玉",
     ["Amethyst"] = "紫水晶",
     ["Quartz"] = "石英",
     ["Obsidian"] = "黑曜石",
     ["Mithril"] = "秘银",
-    ["Adamantite"] = "精金",
-    ["Orichalcum"] = "山铜",
-    ["Titanium"] = "钛矿石",
     ["Uranium"] = "铀矿石",
-    ["Cobalt"] = "钴矿石",
     
-    -- 敌人类型
     ["Goblin"] = "哥布林",
     ["Skeleton"] = "骷髅",
     ["Zombie"] = "僵尸",
@@ -252,7 +230,6 @@ local ChineseTranslations = {
     ["Elf"] = "精灵",
     ["Dwarf"] = "矮人",
     
-    -- 药水类型
     ["HealthPotion"] = "生命药水",
     ["ManaPotion"] = "法力药水",
     ["SpeedPotion"] = "速度药水",
@@ -274,7 +251,6 @@ local ChineseTranslations = {
     ["TimePotion"] = "时间药水",
     ["MagicPotion"] = "魔法药水",
     
-    -- 物品类型
     ["Wood"] = "木头",
     ["Stone"] = "石头",
     ["IronBar"] = "铁锭",
@@ -294,7 +270,6 @@ local ChineseTranslations = {
     ["UraniumOre"] = "铀矿石",
     ["CobaltBar"] = "钴锭",
     
-    -- NPC名称
     ["Blacksmith"] = "铁匠",
     ["Merchant"] = "商人",
     ["Innkeeper"] = "旅店老板",
@@ -316,7 +291,6 @@ local ChineseTranslations = {
     ["Princess"] = "公主",
     ["Bard"] = "吟游诗人",
     
-    -- 商店名称
     ["GeneralStore"] = "杂货店",
     ["WeaponShop"] = "武器店",
     ["ArmorShop"] = "防具店",
@@ -339,25 +313,21 @@ local ChineseTranslations = {
     ["RareItemShop"] = "稀有物品店"
 }
 
--- 翻译函数
 local function TranslateToChinese(englishText)
     if not englishText then return "" end
     return ChineseTranslations[englishText] or englishText
 end
 
--- 获取原始选项对应的英文值
 local function GetEnglishValue(chineseOption)
     if chineseOption == "全部" then
         return "全部"
     end
     
-    -- 查找括号内的英文名
     local startPos, endPos = string.find(chineseOption, "%((.+)%)$")
     if startPos and endPos then
         return string.sub(chineseOption, startPos+1, endPos-1)
     end
     
-    -- 如果没有括号，尝试反向查找翻译表
     for english, chinese in pairs(ChineseTranslations) do
         if chinese == chineseOption then
             return english
@@ -367,13 +337,11 @@ local function GetEnglishValue(chineseOption)
     return chineseOption
 end
 
--- 安全获取配置值
 local vu27 = false
 local vu29 = {}
 local vu30 = 6
 local vu32 = 35
 
--- 获取挖矿配置
 if vu15.CurrentConfig then
     vu27 = vu15.CurrentConfig.AutoMineEnabled or DefaultConfig.AutoMineEnabled
     
@@ -397,22 +365,19 @@ else
     vu32 = DefaultConfig.MineTweenSpeed
 end
 
--- 挖矿相关变量
 local vu33 = {}
 local vu35 = {}
 local vu36 = 10
 local vu37 = false
 local vu38 = nil
 local vu39 = nil
-local vu287 = nil  -- 敌人移动Tween
+local vu287 = nil 
 
--- 敌人相关变量
 local vu41 = {}
 local vu42 = 6
 local vu44 = 35
 local vu45 = false
 
--- 获取敌人配置
 if vu15.CurrentConfig then
     local v40 = vu15.CurrentConfig.SelectedEnemyType
     if type(v40) == "string" then
@@ -436,34 +401,27 @@ else
     vu45 = DefaultConfig.AutoFarmEnemyEnabled
 end
 
--- 其他配置
 local vu46 = vu15.CurrentConfig and (vu15.CurrentConfig.AntiAFKEnabled or DefaultConfig.AntiAFKEnabled) or DefaultConfig.AntiAFKEnabled
 local vu47 = {}
 
--- ESP配置
 local vu49 = vu15.CurrentConfig and (vu15.CurrentConfig.ESPRockEnabled or DefaultConfig.ESPRockEnabled) or DefaultConfig.ESPRockEnabled
 local vu50 = vu15.CurrentConfig and (vu15.CurrentConfig.ESPEnemyEnabled or DefaultConfig.ESPEnemyEnabled) or DefaultConfig.ESPEnemyEnabled
 local vu51 = vu15.CurrentConfig and (vu15.CurrentConfig.ESPPlayerEnabled or DefaultConfig.ESPPlayerEnabled) or DefaultConfig.ESPPlayerEnabled
 
--- UI设置配置
 local vu676 = vu15.CurrentConfig and (vu15.CurrentConfig.UIBlurEnabled or DefaultConfig.UIBlurEnabled) or DefaultConfig.UIBlurEnabled
 local vu677 = vu15.CurrentConfig and (vu15.CurrentConfig.NotificationsEnabled or DefaultConfig.NotificationsEnabled) or DefaultConfig.NotificationsEnabled
 local vu678 = vu15.CurrentConfig and (vu15.CurrentConfig.ShowUserInfo or DefaultConfig.ShowUserInfo) or DefaultConfig.ShowUserInfo
 
--- ESP存储表
 local vu52 = {}
 local vu53 = {}
 local vu54 = {}
 
--- 飞行高度
 local vu55 = 300
 
--- 敌人飞行状态
 local vu56 = false
 local vu57 = nil
 local vu58 = {}
 
--- 药水相关变量
 local vu60 = {}
 local vu61 = false
 
@@ -482,7 +440,6 @@ end
 
 local vu62 = false
 
--- 物品相关变量
 local vu63 = {}
 local vu65 = {}
 local vu66 = false
@@ -503,13 +460,11 @@ end
 local vu67 = nil
 local vu68 = false
 
--- NPC和商店列表
 local vu69 = {}
 local vu70 = nil
 local vu71 = {}
 local vu72 = nil
 
--- 创建各个部分
 local v73 = {
     FarmLeft = v26.Farm:Section({
         Name = "自动挖矿设置",
@@ -550,7 +505,6 @@ local v73 = {
 }
 
 -- ==================== 核心功能函数 ====================
--- 获取所有矿石类型
 local function vu82()
     vu33 = {}
     local v74 = {}
@@ -575,7 +529,6 @@ local function vu82()
     return vu33
 end
 
--- 根据矿石名称获取矿石部件
 local function vu91(p83)
     local v84 = {}
     if not p83 or p83 == "" then
@@ -596,7 +549,6 @@ local function vu91(p83)
     return v84
 end
 
--- 检查是否有可用的矿石
 local function vu110(p92)
     if not p92 or #p92 == 0 then
         return false
@@ -633,7 +585,6 @@ local function vu110(p92)
     return false
 end
 
--- 检查是否有人正在挖矿
 local function vu121()
     local v111 = vu1.LocalPlayer
     if not v111 then
@@ -666,7 +617,6 @@ local function vu121()
     return false
 end
 
--- 飞行到高空
 local function vu130()
     local v122 = vu1.LocalPlayer.Character
     if not v122 then
@@ -710,7 +660,6 @@ local function vu130()
     return true
 end
 
--- 停止所有移动
 local function vu137()
     if vu39 then
         pcall(function()
@@ -747,7 +696,6 @@ local function vu137()
     vu56 = false
 end
 
--- 移动到矿石位置
 local function vu147(p138)
     local v139 = vu1.LocalPlayer.Character
     if not v139 then
@@ -778,7 +726,6 @@ local function vu147(p138)
     return true
 end
 
--- 挖矿动作
 local function vu171(pu148, p149)
     if not pu148 or not p149 or p149 == "" then
         return
@@ -883,14 +830,12 @@ v73.FarmLeft:Header({
     Name = "⚒️ 自动挖矿"
 })
 
--- 初始化矿石列表
 local v172 = vu82()
 local v181 = {"全部"}
 for _, v182 in pairs(v172) do
     table.insert(v181, v182)
 end
 
--- 创建中文化选项
 local v181Chinese = {}
 for _, v182 in pairs(v181) do
     if v182 == "全部" then
@@ -900,7 +845,6 @@ for _, v182 in pairs(v181) do
     end
 end
 
--- 矿石选择下拉框
 local vu193 = v73.FarmLeft:Dropdown({
     Name = "选择矿石类型",
     Multi = true,
@@ -941,11 +885,10 @@ local vu193 = v73.FarmLeft:Dropdown({
             vu29 = {}
             vu15.CurrentConfig.SelectedRockType = {}
         end
-        pcall(vu15.SaveConfig)
+        pcall(function() vu15:SaveConfig() end)
     end
 }, "SelectRockDropdown")
 
--- 初始化选中项显示
 local function UpdateRockDropdownSelection()
     if vu29 and #vu29 > 0 and vu193 and vu193.UpdateSelection then
         local selectedChinese = {}
@@ -960,7 +903,6 @@ local function UpdateRockDropdownSelection()
     end
 end
 
--- 挖矿距离选择
 local v206 = v73.FarmLeft:Dropdown({
     Name = "选择挖矿距离",
     Multi = false,
@@ -983,7 +925,7 @@ local v206 = v73.FarmLeft:Dropdown({
         if v205 and v205 >= 1 and v205 <= 10 then
             vu30 = v205
             vu15.CurrentConfig.SelectedMineDistance = vu30
-            pcall(vu15.SaveConfig)
+            pcall(function() vu15:SaveConfig() end)
         end
     end
 }, "SelectMineDistanceDropdown")
@@ -992,7 +934,6 @@ if vu30 and v206 and v206.UpdateSelection then
     v206:UpdateSelection(tostring(vu30))
 end
 
--- 移动速度滑块
 v73.FarmLeft:Slider({
     Name = "移动速度 (1-50)",
     Default = vu32,
@@ -1005,7 +946,7 @@ v73.FarmLeft:Slider({
         local v209 = math.clamp(v208, 1, 50)
         vu32 = v209
         vu15.CurrentConfig.MineTweenSpeed = v209
-        pcall(vu15.SaveConfig)
+        pcall(function() vu15:SaveConfig() end)
         if vu27 and not vu62 then
             if vu39 then
                 pcall(function()
@@ -1019,14 +960,13 @@ v73.FarmLeft:Slider({
     end
 }, "MineTweenSpeedSlider")
 
--- 自动挖矿开关
 v73.FarmLeft:Toggle({
     Name = "启用自动挖矿",
     Default = vu27,
     Callback = function(p210)
         vu27 = p210
         vu15.CurrentConfig.AutoMineEnabled = p210
-        pcall(vu15.SaveConfig)
+        pcall(function() vu15:SaveConfig() end)
         if p210 then
             if vu29 and #vu29 ~= 0 then
                 vu130()
@@ -1049,7 +989,6 @@ v73.FarmLeft:Header({
     Name = "⚔️ 自动刷怪"
 })
 
--- 获取敌人名称（去除数字后缀）
 local function vu242(p240)
     if p240 and p240 ~= "" then
         local v241 = p240:gsub("%d+$", "")
@@ -1063,7 +1002,6 @@ local function vu242(p240)
     end
 end
 
--- 获取所有敌人类型
 local function vu251()
     vu47 = {}
     local v243 = {}
@@ -1088,7 +1026,6 @@ local function vu251()
     return vu47
 end
 
--- 根据敌人类型获取敌人实例
 local function vu267(p260)
     local v261 = {}
     if not p260 or p260 == "" then
@@ -1106,7 +1043,6 @@ local function vu267(p260)
     return v261
 end
 
--- 检查敌人是否死亡
 local function vu270(p268)
     if not p268 or not p268.Parent then
         return true
@@ -1115,7 +1051,6 @@ local function vu270(p268)
     return v269 and v269:FindFirstChild("Dead") and true or false
 end
 
--- 获取最近的敌人
 local function vu283(p271)
     local v272 = vu1.LocalPlayer.Character
     if not v272 then
@@ -1143,7 +1078,6 @@ local function vu283(p271)
     return v279
 end
 
--- 敌人飞行到高空
 local function vu296()
     local v288 = vu1.LocalPlayer.Character
     if not v288 then
@@ -1187,7 +1121,6 @@ local function vu296()
     return true
 end
 
--- 移动到敌人
 local function vu307(p297)
     local v298 = vu1.LocalPlayer.Character
     if not v298 then
@@ -1218,7 +1151,6 @@ local function vu307(p297)
     return true
 end
 
--- 攻击敌人
 local function vu329(pu308, p309)
     if not pu308 or not p309 or p309 == "" then
         return
@@ -1316,7 +1248,6 @@ local function vu329(pu308, p309)
     end
 end
 
--- 初始化敌人列表
 local vu330 = vu251()
 local v338 = {"全部"}
 local v338Chinese = {"全部"}
@@ -1325,7 +1256,6 @@ for _, v339 in pairs(vu330) do
     table.insert(v338Chinese, TranslateToChinese(v339) .. " (" .. v339 .. ")")
 end
 
--- 敌人选择下拉框
 local vu350 = v73.FarmLeft:Dropdown({
     Name = "选择敌人类型",
     Multi = true,
@@ -1366,11 +1296,10 @@ local vu350 = v73.FarmLeft:Dropdown({
             vu41 = {}
             vu15.CurrentConfig.SelectedEnemyType = {}
         end
-        pcall(vu15.SaveConfig)
+        pcall(function() vu15:SaveConfig() end)
     end
 }, "SelectEnemyDropdown")
 
--- 刷怪距离选择
 local v366 = v73.FarmLeft:Dropdown({
     Name = "选择刷怪距离",
     Multi = false,
@@ -1393,7 +1322,7 @@ local v366 = v73.FarmLeft:Dropdown({
         if v365 and v365 >= 1 and v365 <= 10 then
             vu42 = v365
             vu15.CurrentConfig.SelectedDistance = vu42
-            pcall(vu15.SaveConfig)
+            pcall(function() vu15:SaveConfig() end)
         end
     end
 }, "SelectDistanceDropdown")
@@ -1402,7 +1331,6 @@ if vu42 and v366 and v366.UpdateSelection then
     v366:UpdateSelection(tostring(vu42))
 end
 
--- 刷怪移动速度滑块
 v73.FarmLeft:Slider({
     Name = "移动速度 (1-50)",
     Default = vu44,
@@ -1415,7 +1343,7 @@ v73.FarmLeft:Slider({
         local v369 = math.clamp(v368, 1, 50)
         vu44 = v369
         vu15.CurrentConfig.EnemyTweenSpeed = v369
-        pcall(vu15.SaveConfig)
+        pcall(function() vu15:SaveConfig() end)
         if vu45 and not vu62 then
             if vu287 then
                 pcall(function()
@@ -1429,14 +1357,13 @@ v73.FarmLeft:Slider({
     end
 }, "EnemyTweenSpeedSlider")
 
--- 自动刷怪开关
 v73.FarmLeft:Toggle({
     Name = "启用自动刷怪",
     Default = vu45,
     Callback = function(p370)
         vu45 = p370
         vu15.CurrentConfig.AutoFarmEnemyEnabled = p370
-        pcall(vu15.SaveConfig)
+        pcall(function() vu15:SaveConfig() end)
         if p370 then
             if vu41 and #vu41 > 0 then
                 vu296()
@@ -1454,7 +1381,6 @@ v73.FarmLeft:Toggle({
     end
 }, "AutoFarmEnemyToggle")
 
--- 初始化敌人下拉框选中项
 local function UpdateEnemyDropdownSelection()
     if vu41 and #vu41 > 0 and vu350 and vu350.UpdateSelection then
         local selectedChinese = {}
@@ -1474,14 +1400,13 @@ v73.FarmRight:Header({
     Name = "👁️ ESP设置"
 })
 
--- 矿石ESP开关
 v73.FarmRight:Toggle({
     Name = "矿石ESP",
     Default = vu49,
     Callback = function(p661)
         vu49 = p661
         vu15.CurrentConfig.ESPRockEnabled = p661
-        pcall(vu15.SaveConfig)
+        pcall(function() vu15:SaveConfig() end)
         vu22("ESP", (p661 and "开启" or "关闭") .. " 矿石ESP", 3)
         if not p661 then
             for _, v665 in pairs(vu52) do
@@ -1494,14 +1419,13 @@ v73.FarmRight:Toggle({
     end
 }, "ESPRockToggleFarm")
 
--- 敌人ESP开关
 v73.FarmRight:Toggle({
     Name = "敌人ESP",
     Default = vu50,
     Callback = function(p666)
         vu50 = p666
         vu15.CurrentConfig.ESPEnemyEnabled = p666
-        pcall(vu15.SaveConfig)
+        pcall(function() vu15:SaveConfig() end)
         vu22("ESP", (p666 and "开启" or "关闭") .. " 敌人ESP", 3)
         if not p666 then
             for _, v670 in pairs(vu53) do
@@ -1514,7 +1438,6 @@ v73.FarmRight:Toggle({
     end
 }, "ESPEnemyToggleFarm")
 
--- 刷新矿石列表按钮
 v73.FarmRight:Button({
     Name = "刷新矿石列表",
     Callback = function()
@@ -1538,7 +1461,6 @@ v73.FarmRight:Button({
     end
 }, "RefreshRockListButton")
 
--- 刷新敌人列表按钮
 v73.FarmRight:Button({
     Name = "刷新敌人列表",
     Callback = function()
@@ -1563,7 +1485,6 @@ v73.FarmRight:Button({
 }, "RefreshEnemyListButton")
 
 -- ==================== ESP功能修复 ====================
--- 创建ESP显示
 local function vu558(p552, p553, p554, espType)
     local v555 = p552:FindFirstChild("ESPBillboard")
     if not v555 then
@@ -1604,7 +1525,6 @@ local function vu558(p552, p553, p554, espType)
     return v555
 end
 
--- 矿石ESP更新函数
 local function vu589()
     if not vu49 then
         return
@@ -1630,7 +1550,6 @@ local function vu589()
         return
     end
     
-    -- 检查是否选择了"全部"
     local v568 = {}
     local v569 = false
     for _, v570 in pairs(vu29) do
@@ -1653,7 +1572,6 @@ local function vu589()
             end
         end
         
-        -- 清理不再存在的ESP
         for v580, v581 in pairs(vu52) do
             if not (v575[v580] and v580.Parent) then
                 if v581 and v581.Parent then
@@ -1663,7 +1581,6 @@ local function vu589()
             end
         end
         
-        -- 创建或更新ESP
         for v584, v585 in pairs(v575) do
             if v584 and v584.Parent then
                 local v586 = (v564.Position - v584.Position).Magnitude
@@ -1681,7 +1598,6 @@ local function vu589()
     end
 end
 
--- 敌人ESP更新函数
 local function vu623()
     if not vu50 then
         return
@@ -1707,7 +1623,6 @@ local function vu623()
         return
     end
     
-    -- 检查是否选择了"全部"
     local v599 = {}
     local v600 = false
     for _, v601 in pairs(vu41) do
@@ -1736,7 +1651,6 @@ local function vu623()
             end
         end
         
-        -- 清理不再存在的ESP
         for v612, v613 in pairs(vu53) do
             if not (v606[v612] and v612.Parent and not vu270(v612)) then
                 if v613 and v613.Parent then
@@ -1746,7 +1660,6 @@ local function vu623()
             end
         end
         
-        -- 创建或更新ESP
         for v616, v617 in pairs(v606) do
             if v616 and v616.Parent then
                 local v618 = v617.rootPart
@@ -1770,7 +1683,6 @@ local function vu623()
     end
 end
 
--- 玩家ESP更新函数
 local function vu647()
     if not vu51 then
         return
@@ -1800,7 +1712,6 @@ local function vu647()
         end
     end
     
-    -- 清理不再存在的ESP
     for v637, v638 in pairs(vu54) do
         if not (v631[v637] and v637.Character and v631[v637].Parent) then
             if v638 and v638.Parent then
@@ -1810,7 +1721,6 @@ local function vu647()
         end
     end
     
-    -- 创建或更新ESP
     for v641, v642 in pairs(v631) do
         if v641 and v642 and v642.Parent then
             local v643 = (v626.Position - v642.Position).Magnitude
@@ -1832,14 +1742,11 @@ local function vu647()
     end
 end
 
--- ESP更新主循环
 task.spawn(function()
     while task.wait(0.1) do
-        -- 更新矿石ESP
         if vu49 then
             pcall(vu589)
         else
-            -- 清理矿石ESP
             for _, v651 in pairs(vu52) do
                 if v651 and v651.Parent then
                     v651:Destroy()
@@ -1848,11 +1755,9 @@ task.spawn(function()
             vu52 = {}
         end
         
-        -- 更新敌人ESP
         if vu50 then
             pcall(vu623)
         else
-            -- 清理敌人ESP
             for _, v655 in pairs(vu53) do
                 if v655 and v655.Parent then
                     v655:Destroy()
@@ -1861,11 +1766,9 @@ task.spawn(function()
             vu53 = {}
         end
         
-        -- 更新玩家ESP
         if vu51 then
             pcall(vu647)
         else
-            -- 清理玩家ESP
             for _, v659 in pairs(vu54) do
                 if v659 and v659.Parent then
                     v659:Destroy()
@@ -1899,7 +1802,6 @@ task.spawn(function()
                         if v223 and v223.Parent then
                             local v224 = vu35[v223]
                             local v225 = tick()
-                            -- 检查是否有人正在挖这个矿
                             if not v224 or (v225 - v224) >= vu36 then
                                 local v226 = v212.Position
                                 local v227 = v223.Position
@@ -1931,10 +1833,8 @@ task.spawn(function()
         task.wait(0.3)
         
         if vu45 and vu41 and #vu41 > 0 and not vu62 then
-            -- 优先检查自动挖矿是否在运行且有可挖的矿
             if vu27 and vu29 and #vu29 > 0 then
                 if vu110(vu29) then
-                    -- 有可挖的矿，继续挖矿
                     task.wait(0.5)
                     continue
                 end
@@ -1957,7 +1857,6 @@ task.spawn(function()
                 local v379 = false
                 local v380 = nil
                 
-                -- 检查是否选择了"全部"
                 for _, v381 in pairs(vu41) do
                     if v381 == "全部" then
                         v379 = true
@@ -1969,7 +1868,6 @@ task.spawn(function()
                     v375 = vu330
                 end
                 
-                -- 寻找最近的敌人
                 for _, v385 in pairs(v375) do
                     local v386 = vu283(v385)
                     if v386 then
@@ -2026,7 +1924,6 @@ v73.ShopPotion:Header({
     Name = "💊 自动药水"
 })
 
--- 获取药水列表
 local function vu259()
     vu58 = {}
     local v252 = vu5:FindFirstChild("Assets")
@@ -2050,7 +1947,6 @@ local function vu259()
     return vu58
 end
 
--- 药水名称转换功能
 local function vu412(p411)
     if p411 and p411 ~= "" then
         local conversionTable = {
@@ -2063,7 +1959,6 @@ local function vu412(p411)
     end
 end
 
--- 传送到药水商店
 local vu391 = nil
 local function vu401()
     local v392 = vu1.LocalPlayer.Character
@@ -2083,46 +1978,18 @@ local function vu401()
     else
         v395 = Vector3.new(-153.73959721191406, 27.377073287963867, 116.34660339355469)
     end
-    local v396 = (v393.Position - v395).Magnitude
-    local v397 = math.clamp(v396 / 5, 3, 12)
-    local v398 = CFrame.new(v395, v395 + v393.CFrame.LookVector * Vector3.new(1, 0, 1))
-    if vu391 then
-        pcall(function()
-            vu391:Cancel()
-        end)
-        vu391 = nil
-    end
-    local vu399 = vu3:Create(v393, TweenInfo.new(v397, Enum.EasingStyle.Linear, Enum.EasingDirection.Out), {
-        CFrame = v398
-    })
-    vu391 = vu399
-    vu399:Play()
-    local vu400 = false
-    vu399.Completed:Connect(function()
-        vu400 = true
-    end)
-    while not vu400 do
-        if not vu61 then
-            pcall(function()
-                vu399:Cancel()
-            end)
-            vu391 = nil
-            return false
-        end
-        task.wait(0.05)
-    end
-    vu391 = nil
+    
+    v393.CFrame = CFrame.new(v395 + Vector3.new(0, 5, 0))
+    task.wait(0.2)
     return true
 end
 
--- 初始化药水列表
 local v402 = vu259()
 local v402Chinese = {}
 for _, potion in pairs(v402) do
     table.insert(v402Chinese, TranslateToChinese(potion) .. " (" .. potion .. ")")
 end
 
--- 药水选择下拉框
 local vu408 = v73.ShopPotion:Dropdown({
     Name = "选择药水",
     Multi = true,
@@ -2147,11 +2014,10 @@ local vu408 = v73.ShopPotion:Dropdown({
             vu60 = {}
             vu15.CurrentConfig.SelectedPotionName = {}
         end
-        pcall(vu15.SaveConfig)
+        pcall(function() vu15:SaveConfig() end)
     end
 }, "SelectPotionDropdown")
 
--- 刷新药水列表按钮
 v73.ShopPotion:Button({
     Name = "刷新药水列表",
     Callback = function()
@@ -2173,21 +2039,19 @@ v73.ShopPotion:Button({
     end
 }, "RefreshPotionListButton")
 
--- 自动购买和使用药水开关
 v73.ShopPotion:Toggle({
     Name = "自动购买使用药水",
     Default = vu61,
     Callback = function(p410)
         vu61 = p410
         vu15.CurrentConfig.AutoBuyAndUsePotionEnabled = p410
-        pcall(vu15.SaveConfig)
+        pcall(function() vu15:SaveConfig() end)
         if p410 and (not vu60 or #vu60 == 0) then
             vu22("药水", "请先选择药水!", 3)
         end
     end
 }, "AutoBuyAndUsePotionToggle")
 
--- 检查是否已有药水
 local function vu418(p413)
     local v414 = vu1.LocalPlayer
     if not v414 then
@@ -2206,12 +2070,10 @@ local function vu418(p413)
         return false
     end
     
-    -- 检查转换后的名称和原始名称
     local convertedName = vu412(p413)
     return (v417:FindFirstChild(convertedName) or v417:FindFirstChild(p413)) and true or false
 end
 
--- 初始化药水下拉框选中项
 local function UpdatePotionDropdownSelection()
     if vu60 and #vu60 > 0 and vu408 and vu408.UpdateSelection then
         local selectedChinese = {}
@@ -2222,18 +2084,15 @@ local function UpdatePotionDropdownSelection()
     end
 end
 
--- 自动购买和使用药水循环
 task.spawn(function()
     local vu419 = vu5:WaitForChild("Shared"):WaitForChild("Packages"):WaitForChild("Knit"):WaitForChild("Services"):WaitForChild("ToolService"):WaitForChild("RF"):WaitForChild("ToolActivated")
     
     while true do
-        task.wait(1)
+        task.wait(0.5)
         
         if vu61 and vu60 and #vu60 > 0 then
-            -- 设置执行任务标志
             vu62 = true
             
-            -- 停止其他移动
             if vu38 then
                 vu38:Disconnect()
                 vu38 = nil
@@ -2245,11 +2104,9 @@ task.spawn(function()
             vu37 = false
             vu56 = false
             
-            -- 获取玩家背包
             local v420 = vu1.LocalPlayer
             local v421 = v420:FindFirstChild("Backpack")
             
-            -- 检查金币
             local v422 = false
             local v420gui = v420:FindFirstChild("PlayerGui")
             if v420gui then
@@ -2273,39 +2130,75 @@ task.spawn(function()
                 for _, vu428 in pairs(vu60) do
                     if not vu61 then break end
                     
-                    -- 检查背包中是否有药水
                     local v429 = v421 and v421:FindFirstChild(vu428)
                     
                     if v429 then
-                        -- 使用已有的药水
                         pcall(function()
                             vu419:InvokeServer(vu428)
                         end)
-                        task.wait(0.5)
+                        task.wait(0.1)
                     elseif not vu418(vu428) then
-                        -- 购买药水
                         if vu401() then
                             pcall(function()
                                 vu6:InvokeServer(vu428, 3)
                             end)
-                            task.wait(2) -- 等待购买完成
+                            task.wait(0.5)
                         end
                     end
                 end
             end
             
-            -- 清除执行任务标志
             vu62 = false
         end
     end
 end)
 
--- ==================== 自动出售物品功能 ====================
+-- ==================== 自动出售物品功能 (根据9ac脚本修复版) ====================
 v73.SellItem:Header({
     Name = "💰 自动出售物品"
 })
 
--- 获取物品列表
+local function vu452(p439)
+    local v440 = vu1.LocalPlayer
+    if not v440 then
+        return 0
+    end
+    local v441 = v440:FindFirstChild("PlayerGui")
+    if not v441 then
+        return 0
+    end
+    
+    local function tryFindQuantity(path)
+        local current = v441
+        for _, part in ipairs(path) do
+            if current then
+                current = current:FindFirstChild(part)
+            else
+                break
+            end
+        end
+        return current
+    end
+    
+    local quantityPaths = {
+        {"Menu", "Frame", "Frame", "Menus", "Stash", "Background", p439, "Main", "Quantity"},
+        {"Main", "Screen", "Stash", "Background", p439, "Main", "Quantity"},
+        {"Menu", "Main", "Stash", "Items", p439, "Quantity"},
+        {"Stash", "Background", p439, "Main", "Quantity"}
+    }
+    
+    for _, path in ipairs(quantityPaths) do
+        local quantityLabel = tryFindQuantity(path)
+        if quantityLabel and quantityLabel:IsA("TextLabel") then
+            local text = quantityLabel.Text or ""
+            local number = text:gsub("[^%d]", "")
+            return tonumber(number) or 0
+        end
+    end
+    
+    return 0
+end
+
 local function vu438()
     vu63 = {}
     local v432 = vu5:FindFirstChild("Assets")
@@ -2325,20 +2218,41 @@ local function vu438()
     return vu63
 end
 
--- 初始化物品列表
-local vu460 = vu438()
-local vu460Chinese = {}
-for _, item in pairs(vu460) do
-    table.insert(vu460Chinese, TranslateToChinese(item) .. " (" .. item .. ")")
+local function vu459()
+    local v456 = {}
+    for _, v457 in pairs(vu63) do
+        local v458 = vu452(v457)
+        if v458 > 0 then
+            table.insert(v456, TranslateToChinese(v457) .. " (" .. v457 .. ") [" .. tostring(v458) .. "]")
+        else
+            table.insert(v456, TranslateToChinese(v457) .. " (" .. v457 .. ")")
+        end
+    end
+    return v456
 end
 
--- 物品选择下拉框
+local function v467()
+    local v464 = {}
+    for _, v465 in pairs(vu65 or {}) do
+        local v466 = vu452(v465)
+        if v466 > 0 then
+            table.insert(v464, TranslateToChinese(v465) .. " (" .. v465 .. ") [" .. tostring(v466) .. "]")
+        else
+            table.insert(v464, TranslateToChinese(v465) .. " (" .. v465 .. ")")
+        end
+    end
+    return v464
+end
+
+local vu460 = vu438()
+local vu460Chinese = vu459()
+
 local vu474 = v73.SellItem:Dropdown({
     Name = "选择物品",
     Multi = true,
     Required = false,
     Options = vu460Chinese,
-    Default = {},
+    Default = v467(),
     Callback = function(p468)
         if typeof(p468) ~= "table" then
             vu65 = {}
@@ -2346,25 +2260,24 @@ local vu474 = v73.SellItem:Dropdown({
             vu65 = {}
             for v471, v472 in pairs(p468) do
                 if v472 then
-                    local englishValue = GetEnglishValue(v471)
-                    table.insert(vu65, englishValue)
+                    local startPos, endPos = string.find(v471, "%((.+)%)")
+                    if startPos and endPos then
+                        local englishName = string.sub(v471, startPos+1, endPos-1)
+                        table.insert(vu65, englishName)
+                    end
                 end
             end
         end
         vu15.CurrentConfig.SelectedItemName = vu65
-        pcall(vu15.SaveConfig)
+        pcall(function() vu15:SaveConfig() end)
     end
 }, "SelectItemDropdown")
 
--- 刷新物品列表按钮
 v73.SellItem:Button({
     Name = "刷新物品列表",
     Callback = function()
         vu460 = vu438()
-        local vu460ChineseNew = {}
-        for _, item in pairs(vu460) do
-            table.insert(vu460ChineseNew, TranslateToChinese(item) .. " (" .. item .. ")")
-        end
+        local vu460ChineseNew = vu459()
         if vu474 then
             if vu474.ClearOptions then
                 vu474:ClearOptions()
@@ -2372,20 +2285,33 @@ v73.SellItem:Button({
             if vu474.InsertOptions then
                 vu474:InsertOptions(vu460ChineseNew)
             end
-            UpdateItemDropdownSelection()
+            if vu65 and #vu65 > 0 then
+                local selectedOptions = {}
+                for _, selectedItem in ipairs(vu65) do
+                    local chineseName = TranslateToChinese(selectedItem)
+                    for _, option in ipairs(vu460ChineseNew) do
+                        if option:find(selectedItem, 1, true) then
+                            table.insert(selectedOptions, option)
+                            break
+                        end
+                    end
+                end
+                if #selectedOptions > 0 and vu474.UpdateSelection then
+                    vu474:UpdateSelection(selectedOptions)
+                end
+            end
         end
         vu22("出售", "物品列表已刷新", 3)
     end
 }, "RefreshItemListButton")
 
--- 自动出售物品开关
 v73.SellItem:Toggle({
     Name = "自动出售物品",
     Default = vu66,
     Callback = function(p486)
         vu66 = p486
         vu15.CurrentConfig.AutoSellItemEnabled = p486
-        pcall(vu15.SaveConfig)
+        pcall(function() vu15:SaveConfig() end)
         if p486 then
             if vu65 and #vu65 ~= 0 then
                 vu67 = nil
@@ -2400,23 +2326,188 @@ v73.SellItem:Toggle({
     end
 }, "AutoSellItemToggle")
 
--- 初始化物品下拉框选中项
 local function UpdateItemDropdownSelection()
     if vu65 and #vu65 > 0 and vu474 and vu474.UpdateSelection then
         local selectedChinese = {}
         for _, eng in pairs(vu65) do
-            table.insert(selectedChinese, TranslateToChinese(eng) .. " (" .. eng .. ")")
+            local quantity = vu452(eng)
+            if quantity > 0 then
+                table.insert(selectedChinese, TranslateToChinese(eng) .. " (" .. eng .. ") [" .. quantity .. "]")
+            else
+                table.insert(selectedChinese, TranslateToChinese(eng) .. " (" .. eng .. ")")
+            end
         end
         vu474:UpdateSelection(selectedChinese)
     end
 end
 
--- ==================== 传送功能 ====================
+-- ==================== 自动出售物品循环 ====================
+task.spawn(function()
+    local vu487 = vu5:WaitForChild("Shared"):WaitForChild("Packages"):WaitForChild("Knit"):WaitForChild("Services"):WaitForChild("DialogueService"):WaitForChild("RF"):WaitForChild("RunCommand")
+    local vu488 = vu5:WaitForChild("Shared"):WaitForChild("Packages"):WaitForChild("Knit"):WaitForChild("Services"):WaitForChild("ProximityService"):WaitForChild("RF"):WaitForChild("ForceDialogue")
+    
+    while true do
+        task.wait(2)
+        
+        if vu66 and vu65 and #vu65 > 0 then
+            vu62 = true
+            
+            if vu38 then
+                vu38:Disconnect()
+                vu38 = nil
+            end
+            if vu57 then
+                vu57:Disconnect()
+                vu57 = nil
+            end
+            if vu287 then
+                pcall(function() vu287:Cancel() end)
+                vu287 = nil
+            end
+            vu37 = false
+            vu56 = false
+            
+            if not vu67 then
+                local v489 = workspace:FindFirstChild("Proximity")
+                if v489 then
+                    local npcNames = {"Greedy Cey", "GreedyCey", "Greedy", "Cey"}
+                    for _, npcName in ipairs(npcNames) do
+                        local v490 = v489:FindFirstChild(npcName)
+                        if v490 then
+                            vu67 = v490
+                            print("找到NPC:", npcName)
+                            break
+                        end
+                    end
+                end
+            end
+            
+            if vu67 and not vu68 then
+                local character = vu1.LocalPlayer.Character
+                if character then
+                    local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
+                    if humanoidRootPart then
+                        local npcPart = vu67:FindFirstChild("HumanoidRootPart") or vu67.PrimaryPart or vu67:FindFirstChildWhichIsA("BasePart", true)
+                        if npcPart then
+                            local targetPos = npcPart.Position + Vector3.new(0, 5, 0)
+                            local distance = (humanoidRootPart.Position - targetPos).Magnitude
+                            local tweenTime = math.clamp(distance / 10, 1, 3)
+                            
+                            local tween = vu3:Create(humanoidRootPart, TweenInfo.new(tweenTime, Enum.EasingStyle.Linear), {
+                                CFrame = CFrame.new(targetPos)
+                            })
+                            tween:Play()
+                            tween.Completed:Wait()
+                            
+                            task.wait(0.5)
+                        end
+                    end
+                end
+                
+                local success = pcall(function()
+                    vu488:InvokeServer(vu67, "SellConfirmMisc")
+                end)
+                
+                if success then
+                    vu68 = true
+                    vu22("出售", "已打开出售界面", 3)
+                    task.wait(1)
+                else
+                    vu22("出售", "打开出售界面失败", 3)
+                    vu67 = nil
+                end
+            end
+            
+            if vu67 and vu68 then
+                local itemsToSell = {}
+                local hasItems = false
+                
+                for _, itemName in ipairs(vu65) do
+                    local quantity = vu452(itemName)
+                    if quantity and quantity > 0 then
+                        itemsToSell[itemName] = quantity
+                        hasItems = true
+                        print("准备出售:", itemName, "数量:", quantity)
+                    end
+                end
+                
+                if hasItems then
+                    local success = pcall(function()
+                        vu487:InvokeServer("SellConfirm", {Basket = itemsToSell})
+                    end)
+                    
+                    if success then
+                        local soldItems = ""
+                        for itemName, quantity in pairs(itemsToSell) do
+                            soldItems = soldItems .. TranslateToChinese(itemName) .. "x" .. quantity .. " "
+                        end
+                        vu22("出售", "成功出售: " .. soldItems, 5)
+                    else
+                        vu22("出售", "出售请求失败", 3)
+                    end
+                    
+                    task.wait(1)
+                else
+                    task.wait(3)
+                end
+            end
+            
+            vu62 = false
+        else
+            task.wait(3) 
+        end
+    end
+end)
+
+task.spawn(function()
+    while true do
+        task.wait(5)
+        if vu474 then
+            vu460 = vu438()
+            local itemOptions = {}
+            
+            for _, itemName in ipairs(vu460) do
+                local quantity = vu452(itemName)
+                if quantity > 0 then
+                    table.insert(itemOptions, TranslateToChinese(itemName) .. " (" .. itemName .. ") [" .. quantity .. "]")
+                else
+                    table.insert(itemOptions, TranslateToChinese(itemName) .. " (" .. itemName .. ")")
+                end
+            end
+            
+            if #itemOptions > 0 then
+                if vu474.ClearOptions then
+                    vu474:ClearOptions()
+                end
+                if vu474.InsertOptions then
+                    vu474:InsertOptions(itemOptions)
+                end
+                
+                if vu65 and #vu65 > 0 then
+                    local selectedOptions = {}
+                    for _, selectedItem in ipairs(vu65) do
+                        local chineseName = TranslateToChinese(selectedItem)
+                        for _, option in ipairs(itemOptions) do
+                            if option:find(selectedItem, 1, true) then
+                                table.insert(selectedOptions, option)
+                                break
+                            end
+                        end
+                    end
+                    
+                    if #selectedOptions > 0 and vu474.UpdateSelection then
+                        vu474:UpdateSelection(selectedOptions)
+                    end
+                end
+            end
+        end
+    end
+end)
+
 v73.TeleportNPC:Header({
     Name = "🚀 传送到NPC"
 })
 
--- 获取所有NPC列表
 local function vu515()
     vu69 = {}
     local v510 = workspace:FindFirstChild("Proximity")
@@ -2432,7 +2523,6 @@ local function vu515()
     return vu69
 end
 
--- 获取所有商店列表
 local function vu521()
     vu71 = {}
     local v516 = workspace:FindFirstChild("Shops")
@@ -2448,7 +2538,6 @@ local function vu521()
     return vu71
 end
 
--- 传送功能
 local function vu535(p522, p523)
     local v524 = vu1.LocalPlayer.Character
     if not v524 then
@@ -2487,14 +2576,12 @@ local function vu535(p522, p523)
     return true
 end
 
--- 初始化NPC列表
 local vu536 = vu515()
 local vu536Chinese = {}
 for _, npc in pairs(vu536) do
     table.insert(vu536Chinese, TranslateToChinese(npc) .. " (" .. npc .. ")")
 end
 
--- NPC选择下拉框
 local vu542 = v73.TeleportNPC:Dropdown({
     Name = "选择NPC",
     Multi = false,
@@ -2521,7 +2608,6 @@ local vu542 = v73.TeleportNPC:Dropdown({
     end
 }, "SelectNPCDropdown")
 
--- 刷新NPC列表按钮
 v73.TeleportNPC:Button({
     Name = "刷新NPC列表",
     Callback = function()
@@ -2543,7 +2629,6 @@ v73.TeleportNPC:Button({
     end
 }, "RefreshNPCListButton")
 
--- 传送到NPC按钮
 v73.TeleportNPC:Button({
     Name = "传送到NPC",
     Callback = function()
@@ -2555,19 +2640,16 @@ v73.TeleportNPC:Button({
     end
 }, "TweenToNPCButton")
 
--- 商店传送部分
 v73.TeleportShop:Header({
     Name = "🛒 传送到商店"
 })
 
--- 初始化商店列表
 local vu544 = vu521()
 local vu544Chinese = {}
 for _, shop in pairs(vu544) do
     table.insert(vu544Chinese, TranslateToChinese(shop) .. " (" .. shop .. ")")
 end
 
--- 商店选择下拉框
 local vu550 = v73.TeleportShop:Dropdown({
     Name = "选择商店",
     Multi = false,
@@ -2594,7 +2676,6 @@ local vu550 = v73.TeleportShop:Dropdown({
     end
 }, "SelectShopDropdown")
 
--- 刷新商店列表按钮
 v73.TeleportShop:Button({
     Name = "刷新商店列表",
     Callback = function()
@@ -2616,7 +2697,6 @@ v73.TeleportShop:Button({
     end
 }, "RefreshShopListButton")
 
--- 传送到商店按钮
 v73.TeleportShop:Button({
     Name = "传送到商店",
     Callback = function()
@@ -2633,14 +2713,13 @@ v73.SettingsESP:Header({
     Name = "👁️ ESP设置"
 })
 
--- 玩家ESP开关
 v73.SettingsESP:Toggle({
     Name = "玩家ESP",
     Default = vu51,
     Callback = function(p671)
         vu51 = p671
         vu15.CurrentConfig.ESPPlayerEnabled = p671
-        pcall(vu15.SaveConfig)
+        pcall(function() vu15:SaveConfig() end)
         vu22("ESP", (p671 and "开启" or "关闭") .. " 玩家ESP", 3)
         if not p671 then
             for _, v675 in pairs(vu54) do
@@ -2653,19 +2732,17 @@ v73.SettingsESP:Toggle({
     end
 }, "ESPPlayerToggle")
 
--- 防AFK
 v73.SettingsESP:Toggle({
     Name = "防AFK",
     Default = vu46,
     Callback = function(p660)
         vu46 = p660
         vu15.CurrentConfig.AntiAFKEnabled = p660
-        pcall(vu15.SaveConfig)
+        pcall(function() vu15:SaveConfig() end)
         vu22("防AFK", (p660 and "开启" or "关闭") .. " 防AFK", 3)
     end
 }, "AntiAFKToggle")
 
--- UI全局设置
 v73.SettingsUI:Header({
     Name = "⚙️ UI设置"
 })
@@ -2676,7 +2753,7 @@ v73.SettingsUI:Toggle({
     Callback = function(p676)
         vu676 = p676
         vu15.CurrentConfig.UIBlurEnabled = p676
-        pcall(vu15.SaveConfig)
+        pcall(function() vu15:SaveConfig() end)
         if vu18 and vu18.SetAcrylicBlurState then
             vu18:SetAcrylicBlurState(p676)
         end
@@ -2690,7 +2767,7 @@ v73.SettingsUI:Toggle({
     Callback = function(p677)
         vu677 = p677
         vu15.CurrentConfig.NotificationsEnabled = p677
-        pcall(vu15.SaveConfig)
+        pcall(function() vu15:SaveConfig() end)
         if vu18 and vu18.SetNotificationsState then
             vu18:SetNotificationsState(p677)
         end
@@ -2704,7 +2781,7 @@ v73.SettingsUI:Toggle({
     Callback = function(p678)
         vu678 = p678
         vu15.CurrentConfig.ShowUserInfo = p678
-        pcall(vu15.SaveConfig)
+        pcall(function() vu15:SaveConfig() end)
         if vu18 and vu18.SetUserInfoState then
             vu18:SetUserInfoState(p678)
         end
@@ -2712,13 +2789,12 @@ v73.SettingsUI:Toggle({
     end
 }, "UserInfoToggle")
 
--- 脚本信息
 v73.SettingsInfo:Header({
     Name = "📝 脚本信息"
 })
 
 v73.SettingsInfo:Label({
-    Text = "China Script The Forge\n玩家: " .. vu16
+    Text = "人民的脚本 The Forge\n玩家: " .. vu16
 })
 
 v73.SettingsInfo:Button({
@@ -2738,22 +2814,20 @@ v73.SettingsInfo:SubLabel({
 })
 
 -- ==================== 初始化完成 ====================
--- 启动界面
 v26.Farm:Select()
 
--- 界面关闭事件
-vu18.onUnloaded(function()
-    vu22("China Script | The Forge", "界面已关闭", 3)
-end)
+if vu18 and vu18.onUnloaded then
+    vu18.onUnloaded(function()
+        vu22("人民的脚本 | The Forge", "界面已关闭", 3)
+    end)
+end
 
--- 初始化所有下拉框选中项
 task.wait(1)
 UpdateRockDropdownSelection()
 UpdateEnemyDropdownSelection()
 UpdatePotionDropdownSelection()
 UpdateItemDropdownSelection()
 
--- 应用UI设置
 if vu18 then
     if vu18.SetAcrylicBlurState then
         vu18:SetAcrylicBlurState(vu676)
@@ -2766,14 +2840,12 @@ if vu18 then
     end
 end
 
--- 保存配置循环
 task.spawn(function()
     while task.wait(30) do
-        pcall(vu15.SaveConfig)
+        pcall(function() vu15:SaveConfig() end)
     end
 end)
 
--- 防AFK循环
 task.spawn(function()
     local vu679 = game:GetService("VirtualUser")
     while true do
@@ -2791,7 +2863,6 @@ task.spawn(function()
     end
 end)
 
--- 移动端界面
 task.spawn(function()
     local success, errorMsg = pcall(function()
         if not getgenv().LoadedTheForgeMobileUI == true then
@@ -2801,7 +2872,6 @@ task.spawn(function()
             local mobileButton = Instance.new("ImageButton")
             local uiCorner = Instance.new("UICorner")
             
-            -- 保护GUI
             if syn and syn.protect_gui then
                 syn.protect_gui(screenGui)
                 screenGui.Parent = game:GetService("CoreGui")
@@ -2827,7 +2897,6 @@ task.spawn(function()
             uiCorner.CornerRadius = UDim.new(0, 200)
             uiCorner.Parent = mobileButton
             
-            -- 鼠标悬停效果
             mobileButton.MouseEnter:Connect(function()
                 game:GetService("TweenService"):Create(mobileButton, TweenInfo.new(0.2), {
                     BackgroundTransparency = 0.5,
@@ -2842,7 +2911,6 @@ task.spawn(function()
                 }):Play()
             end)
             
-            -- 点击显示/隐藏界面
             mobileButton.MouseButton1Click:Connect(function()
                 game:GetService("VirtualInputManager"):SendKeyEvent(true, Enum.KeyCode.LeftAlt, false, game)
                 task.wait(0.1)
@@ -2856,20 +2924,19 @@ task.spawn(function()
     end
 end)
 
--- 启动通知
-vu22("China Script | The Forge", 
-    "脚本已加载成功! ESP功能已修复\n" ..
+vu22("人民的脚本 | The Forge", 
+    "脚本已加载成功! 已修复以下问题:\n" ..
+    "✅ 配置保存失败问题 (已修复)\n" ..
+    "✅ 自动出售不生效问题 (已修复)\n" ..
+    "✅ 自动买药慢问题 (已优化)\n" ..
     "✅ 自动挖矿功能（带冷却检测）\n" ..
     "✅ 自动刷怪功能（优先挖矿逻辑）\n" ..
     "✅ 矿石ESP（绿色显示）\n" ..
     "✅ 敌人ESP（红色显示）\n" ..
     "✅ 玩家ESP（蓝色显示）\n" ..
     "✅ 自动买药水（支持名称转换）\n" ..
-    "✅ 自动出售物品\n" ..
+    "✅ 自动出售物品（完全修复）\n" ..
     "✅ 传送功能（NPC/商店）\n" ..
     "✅ 防AFK系统\n" ..
-    "✅ 中文界面和翻译\n\n" ..
     "快捷键: Left Alt 显示/隐藏UI", 
     10)
-
-print("China Script The Forge - 完整修复版已成功加载!")
