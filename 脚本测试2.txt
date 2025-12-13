@@ -3031,4 +3031,127 @@ v26.Farm:Select()
 if vu18 and vu18.onUnloaded then
     vu18.onUnloaded(function()
         vu22("人民的脚本 | The Forge", "界面已关闭", 3)
+    end)
+end
+
+task.wait(1)
+UpdateRockDropdownSelection()
+UpdateEnemyDropdownSelection()
+UpdatePotionDropdownSelection()
+UpdateItemDropdownSelection()
+
+if vu18 then
+    if vu18.SetAcrylicBlurState then
+        vu18:SetAcrylicBlurState(vu676)
     end
+    if vu18.SetNotificationsState then
+        vu18:SetNotificationsState(vu677)
+    end
+    if vu18.SetUserInfoState then
+        vu18:SetUserInfoState(vu678)
+    end
+end
+
+task.spawn(function()
+    while task.wait(30) do
+        pcall(function() vu15:SaveConfig() end)
+    end
+end)
+
+task.spawn(function()
+    local vu692 = game:GetService("VirtualUser")
+    while true do
+        task.wait(120)
+        if vu46 then
+            pcall(function()
+                local v693 = workspace.CurrentCamera
+                if v693 then
+                    vu692:Button2Down(Vector2.new(0, 0), v693.CFrame)
+                    task.wait(1)
+                    vu692:Button2Up(Vector2.new(0, 0), v693.CFrame)
+                end
+            end)
+        end
+    end
+end)
+
+task.spawn(function()
+    local success, errorMsg = pcall(function()
+        if not getgenv().LoadedTheForgeMobileUI == true then
+            getgenv().LoadedTheForgeMobileUI = true
+            
+            local screenGui = Instance.new("ScreenGui")
+            local mobileButton = Instance.new("ImageButton")
+            local uiCorner = Instance.new("UICorner")
+            
+            if syn and syn.protect_gui then
+                syn.protect_gui(screenGui)
+                screenGui.Parent = game:GetService("CoreGui")
+            elseif gethui then
+                screenGui.Parent = gethui()
+            else
+                screenGui.Parent = game:GetService("CoreGui")
+            end
+            
+            screenGui.Name = "ChinaScript_MobileUIButton"
+            screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+            screenGui.ResetOnSpawn = false
+            
+            mobileButton.Parent = screenGui
+            mobileButton.BackgroundColor3 = Color3.fromRGB(105, 105, 105)
+            mobileButton.BackgroundTransparency = 0.8
+            mobileButton.Position = UDim2.new(0.9, 0, 0.1, 0)
+            mobileButton.Size = UDim2.new(0, 50, 0, 50)
+            mobileButton.Image = "rbxassetid://9676276958"
+            mobileButton.Draggable = true
+            mobileButton.Transparency = 0.2
+            
+            uiCorner.CornerRadius = UDim.new(0, 200)
+            uiCorner.Parent = mobileButton
+            
+            mobileButton.MouseEnter:Connect(function()
+                game:GetService("TweenService"):Create(mobileButton, TweenInfo.new(0.2), {
+                    BackgroundTransparency = 0.5,
+                    Transparency = 0
+                }):Play()
+            end)
+            
+            mobileButton.MouseLeave:Connect(function()
+                game:GetService("TweenService"):Create(mobileButton, TweenInfo.new(0.2), {
+                    BackgroundTransparency = 0.8,
+                    Transparency = 0.2
+                }):Play()
+            end)
+            
+            mobileButton.MouseButton1Click:Connect(function()
+                game:GetService("VirtualInputManager"):SendKeyEvent(true, Enum.KeyCode.LeftAlt, false, game)
+                task.wait(0.1)
+                game:GetService("VirtualInputManager"):SendKeyEvent(false, Enum.KeyCode.LeftAlt, false, game)
+            end)
+        end
+    end)
+    
+    if not success then
+        warn("创建移动端界面按钮失败: " .. tostring(errorMsg))
+    end
+end)
+
+vu22("人民的脚本 | The Forge", 
+    "脚本已加载成功! 已修复以下问题:\n" ..
+    "✅ 手机端界面适配 (UI缩放: " .. tostring(uiScale * 100) .. "%)\n" ..
+    "✅ ESP高亮显示功能\n" ..
+    "✅ 降低画质功能\n" ..
+    "✅ 配置保存失败问题 (已修复)\n" ..
+    "✅ 自动出售不生效问题 (已修复)\n" ..
+    "✅ 自动买药慢问题 (已优化)\n" ..
+    "✅ 自动挖矿功能（带冷却检测）\n" ..
+    "✅ 自动刷怪功能（优先挖矿逻辑）\n" ..
+    "✅ 矿石ESP（绿色显示+高亮）\n" ..
+    "✅ 敌人ESP（红色显示+高亮）\n" ..
+    "✅ 玩家ESP（蓝色显示+高亮）\n" ..
+    "✅ 自动买药水（支持名称转换）\n" ..
+    "✅ 自动出售物品（完全修复）\n" ..
+    "✅ 传送功能（NPC/商店）\n" ..
+    "✅ 防AFK系统\n" ..
+    "快捷键: Left Alt 显示/隐藏UI", 
+    10)
