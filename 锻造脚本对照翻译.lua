@@ -1,6 +1,9 @@
--- 锻造脚本翻译对照表
+-- The Forge 脚本翻译对照表
+-- 最后更新: 2024年
+-- 格式: ["英文"] = "中文"
+
 return {
-    -- 矿石翻译
+    -- ========== 矿石翻译 ==========
     ["Stone"] = "石头",
     ["Sand Stone"] = "砂石",
     ["Copper"] = "铜矿",
@@ -42,7 +45,7 @@ return {
     ["Magenta Crystal"] = "紫水晶",
     ["Crimson Crystal"] = "深红色水晶",
     
-    -- 敌人翻译
+    -- ========== 敌人翻译 ==========
     ["Zombie"] = "僵尸",
     ["Delver Zombie"] = "矿工僵尸",
     ["Elite Zombie"] = "精英僵尸",
@@ -58,7 +61,7 @@ return {
     ["Slime"] = "史莱姆",
     ["blazing"] = "火焰史莱姆",
     
-    -- 药水翻译
+    -- ========== 药水翻译 ==========
     ["HealthPotion1"] = "生命药水1",
     ["HealthPotion2"] = "生命药水2",
     ["LuckPotion1"] = "幸运药水1",
@@ -66,12 +69,12 @@ return {
     ["AttackDamagePotion1"] = "伤害药水1",
     ["MovementSpeedPotion1"] = "移速药水1",
     
-    -- 其他矿石翻译
+    -- ========== 其他矿石翻译 ==========
     ["Dark Boneite"] = "黑骨矿",
     ["Boneite"] = "骨矿",
     ["Slimite"] = "史莱姆矿",
     
-    -- NPC翻译
+    -- ========== NPC翻译 ==========
     ["Blacksmith"] = "铁匠",
     ["Merchant"] = "商人",
     ["Innkeeper"] = "旅店老板",
@@ -93,7 +96,7 @@ return {
     ["Princess"] = "公主",
     ["Bard"] = "吟游诗人",
     
-    -- 商店翻译
+    -- ========== 商店翻译 ==========
     ["Enhancer Shop"] = "杂货店",
     ["WeaponShop"] = "武器店",
     ["ArmorShop"] = "防具店",
