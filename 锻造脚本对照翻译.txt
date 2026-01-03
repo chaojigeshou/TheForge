@@ -1,3 +1,5 @@
+-- 锻造脚本翻译对照表
+return {
     -- 矿石翻译
     ["Stone"] = "石头",
     ["Sand Stone"] = "砂石",
@@ -112,3 +114,4 @@
     ["AntiqueShop"] = "古董店",
     ["MagicItemShop"] = "魔法物品店",
     ["RareItemShop"] = "稀有物品店"
+}
